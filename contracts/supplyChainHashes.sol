@@ -23,7 +23,7 @@ contract supplyChain {
     // create a new food supply chain (invoke when you don't know the food id)
     function createSupplyChain(string memory hashValue) public isAdmin returns(uint foodID) {
         hashes[numRecord].push(hashValue);
-        foodId = numRecord;
+        foodID = numRecord;
         numRecord++;
 
         return foodID; // food id of the new supply chain
