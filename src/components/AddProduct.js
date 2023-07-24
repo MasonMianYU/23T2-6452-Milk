@@ -17,25 +17,36 @@ const tailLayout = {
 };
 const AddP = () => {
 
-  const [productId, setproductId] = React.useState('null');
-//   const [password, setPassword] = React.useState('');
-//   const [passwordCheck, setPasswordCheck] = React.useState('');
-  const [info, setInfo] = React.useState('null');
-  const [role, setRole] = React.useState('null');
+  const [product, setProduct] = React.useState('null');
 
   const formRef = React.useRef(null);
 
-//   const jsonstring = JSON.stringify({
-//     address: sessionStorage.getItem('addr');
-//     productId: productId
-//
-//     
-//   });
+  const jsonstring = JSON.stringify({
+    user_address: sessionStorage.getItem('addr'),
+    product_type: product
+  });
 
-  const onFinish = (values) => {
-    console.log(values);
-    console.log(info);
-    console.log(role);
+  const requestoption = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: jsonstring,
+  };
+
+  const onFinish = () => {
+    // fetch('http://127.0.0.1:5000/createBatch', requestoption)
+    // .then((r) => {
+    //   if (r.status === 200) {
+    //     r.json().then((data) => {
+    //       console.log(data);
+    //       alert('success');
+    //       navigate('/info');
+    //     });
+    //   } else {
+    //     r.json().then((data) => {
+    //       alert(data.message);  
+    //     });
+    //   }
+    // })
   };
 
   const onReset = () => {
@@ -49,53 +60,21 @@ const AddP = () => {
       onFinish={onFinish}
       style={{
         maxWidth: 600,
-        //display: 'flex',
-        //alignItems: 'center',
         justifyContent: 'center',
       }}
     >
 
       <Form.Item
-        name="status"
-        label="Milk status"
-        rules={[
-          {
-            required: true,
-          },
-        ]}
-      >
-        <Select
-          //onChange={onGenderChange}
-          allowClear
-        >
-          <Option value="producing">Producing</Option>
-          <Option value="processing">Processing</Option>
-          <Option value="packing">Packing</Option>
-          <Option value="delivered">Delivered</Option>
-          <Option value="dispatching">Dispatching</Option>
-        </Select>
-      </Form.Item>
-      <Form.Item
         name="expiry"
-        label="expiry date"
+        label="product Name"
         rules={[
           {
             required: true,
           },
         ]}
+        onChange = {e => setProduct(e.target.value)}
       >
         <Input />
-      </Form.Item>
-      <Form.Item
-        name="infomation"
-        label="other infomation"
-        rules={[
-          {
-            required: true,
-          },
-        ]}
-      >
-        <Input.TextArea onChange = {e => setInfo(e.target.value)}/>
       </Form.Item>
       <Form.Item {...tailLayout}>
         <Button type="primary" htmlType="submit">

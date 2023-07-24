@@ -10,7 +10,8 @@ const Adduser = () => {
     token: { colorBgContainer },
   } = theme.useToken();
   const jsonstring = JSON.stringify({
-    user_address: addr,
+    user_address: sessionStorage.getItem('addr'),
+    target_address: addr,
   });
 
   const requestoption = {
@@ -21,18 +22,19 @@ const Adduser = () => {
 
   
   const onSearch = () => {
+    console.log(requestoption);
     // fetch('http://127.0.0.1:5000/addAdmin', requestoption)
     // .then((r) => {
     //   if (r.status === 200) {
     //     r.json().then((data) => {
     //       console.log(data);
     //       alert('success');
-    //       navigate('/input');
+    //       navigate('/info');
     //     });
        
     //   } else {
     //     r.json().then((data) => {
-    //     alert(data['message']);  
+    //       alert(data.message);
     //     });
     //   }
     // })
