@@ -15,7 +15,9 @@ contract supplyChainTest is supplyChain {
     address acc1;
     address acc2;
 
-    /// arbitrary strings as hash values for test
+    /// arbitrary numbers as foodID and strings as hash values for testing
+    uint id1 = 1;
+    uint id2 = 2;
     string hashValue1 = "abc123";
     string hashValue2 = "abcde123";
     string hashValue3 = "abcdefg123";
@@ -23,7 +25,7 @@ contract supplyChainTest is supplyChain {
     string[] hashArray1 = [hashValue1, hashValue2];
     string[] hashArray2 = [hashValue3, hashValue4];
 
-    /// helper function, compare two string arrays
+    /// helper function for testing, compare two string arrays
     function compareStringArrays(string[] memory arr1, string[] memory arr2) internal pure returns (bool) {
         if (arr1.length != arr2.length) {
             return false;
@@ -50,35 +52,26 @@ contract supplyChainTest is supplyChain {
         Assert.equal(manager, acc0, 'Manager should be acc0'); 
     }
 
-    /// create supply chain test, create a new supply chain and insert hashValue1 into it
-    function createSupplyChainTest() public {
-        Assert.equal(createSupplyChain(hashValue1), 0, 'Food id should be 0'); 
-    }
-
-    /// add (append) hash value test, add hashValue2 into the first supply chain
+    /// add (append) hash value test, add hashValue1 and hashValue2 into the id1 supply chain
     function addHashTest() public {
-        Assert.ok(addHash(0, hashValue2), 'Should be true'); 
-    }
-
-    /// append a hash value with a previously non-existent food id, this should fail and returns false
-    function addHashFailure() public {
-        Assert.equal(addHash(1, hashValue3), false, 'This should be false');
+        Assert.ok(addHash(id1, hashValue1), 'Should be true');
+        Assert.ok(addHash(id1, hashValue2), 'Should be true'); 
     }
 
     /// get chain length test
     function getChainLengthTest() public {
-        Assert.equal(getChainLength(0), 2, 'Chain length should be 2');
+        Assert.equal(getChainLength(id1), 2, 'Chain length should be 2');
     }
 
     /// getHash test, get two hash values separately
     function getHashTest() public {
-        Assert.equal(getHash(0, 0), hashValue1, 'Hash value should be hashValue1');
-        Assert.equal(getHash(0, 1), hashValue2, 'Hash value should be hashValue2');
+        Assert.equal(getHash(id1, 0), hashValue1, 'Hash value should be hashValue1');
+        Assert.equal(getHash(id1, 1), hashValue2, 'Hash value should be hashValue2');
     }
 
     /// getHashes test, get all hash values in a supply chain
     function getHashesTest() public {
-        Assert.ok(compareStringArrays(getHashes(0), hashArray1), 'Hash values should be hashValue1 and hashValue2'); 
+        Assert.ok(compareStringArrays(getHashes(id1), hashArray1), 'Hash values should be hashValue1 and hashValue2'); 
     }
     
     /// add admin test
@@ -104,16 +97,16 @@ contract supplyChainTest is supplyChain {
     /// create, append and read a supply chain as an admin, rather than manager
     /// #sender: account-1
     function manipulateSupplyChainAsAnAdminTest() public {
-        Assert.equal(createSupplyChain(hashValue3), 1, 'Food id should be 1');
-        Assert.ok(addHash(1, hashValue4), 'Should be true');
-        Assert.ok(compareStringArrays(getHashes(1), hashArray2), 'Hash values should be hashValue3 and hashValue4'); 
+        Assert.ok(addHash(id2, hashValue3), 'Should be true');
+        Assert.ok(addHash(id2, hashValue4), 'Should be true');
+        Assert.ok(compareStringArrays(getHashes(id2), hashArray2), 'Hash values should be hashValue3 and hashValue4'); 
     }
 
     /// manipulate a supply chain as a stranger address (non-manager and non-administrator), this should fail
     function manipulateAsAStrangerFailure() public {
-        // create failure test
-        try this.createSupplyChain(hashValue3) returns (uint foodID) {
-            Assert.equal(foodID, 2, 'Method execution did not fail');
+        // add failure test
+        try this.addHash(id1, hashValue3) returns (bool state) {
+            Assert.equal(state, true, 'Method execution did not fail');
         } catch Error(string memory reason) {
             // Compare failure reason, check if it is as expected
             Assert.equal(reason, 'Can only be executed by the administrator', 'Failed with unexpected reason');
@@ -122,13 +115,35 @@ contract supplyChainTest is supplyChain {
         } catch (bytes memory /*lowLevelData*/) {
             Assert.ok(false, 'Failed unexpectedly');
         }
+    }
 
-        // add failure test
-        try this.addHash(1, hashValue3) returns (bool state) {
+    // disable the contract as a stranger, this should fail
+    function disableContractFailure() public {
+        try this.disableContract() returns (bool state) {
             Assert.equal(state, true, 'Method execution did not fail');
         } catch Error(string memory reason) {
             // Compare failure reason, check if it is as expected
-            Assert.equal(reason, 'Can only be executed by the administrator', 'Failed with unexpected reason');
+            Assert.equal(reason, 'Can only be executed by the manager', 'Failed with unexpected reason');
+        } catch Panic(uint /* errorCode */) { // In case of a panic
+            Assert.ok(false , 'Failed unexpected with error code');
+        } catch (bytes memory /*lowLevelData*/) {
+            Assert.ok(false, 'Failed unexpectedly');
+        }
+    }
+
+    // disable the contract test
+    function disableContractTest() public {
+        Assert.ok(disableContract(), "The contract should be disabled");
+        Assert.ok(disabled, "Should be true");
+    }
+
+    // invoke function (disableContract here) after disabled, this should fail
+    function invokeAfterDisabledFailure() public {
+        try this.disableContract() returns (bool state) {
+            Assert.equal(state, true, 'Method execution did not fail');
+        } catch Error(string memory reason) {
+            // Compare failure reason, check if it is as expected
+            Assert.equal(reason, 'The smart contract has been disabled', 'Failed with unexpected reason');
         } catch Panic(uint /* errorCode */) { // In case of a panic
             Assert.ok(false , 'Failed unexpected with error code');
         } catch (bytes memory /*lowLevelData*/) {
