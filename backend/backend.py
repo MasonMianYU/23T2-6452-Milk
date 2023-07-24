@@ -551,7 +551,7 @@ def query():
 
         # Check the hash values for each record
         for i in range(len(records)):
-            text = ''.join(str(elem) for elem in records[i])
+            text = ''.join(str(elem) for elem in records[i][1:])
             record_hash = Web3.keccak(text=text).hex()
 
             if i < len(stored_hashes) and record_hash != stored_hashes[i]:

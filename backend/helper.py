@@ -10,7 +10,9 @@ def get_records(farmer_id, processor_id, distributor_id, retailer_id, packager_i
     """, {'farmer_id': farmer_id})
     tmp = cursor.fetchone()
     if tmp is not None:
-        result.append(list(tmp))
+        tmp = list(tmp)
+        tmp.insert(0, 'farmer')
+        result.append(tmp)
     cursor.execute("""
         SELECT DISTRIBUTOR_ADDRESS, DISTRIBUTOR_CONTACT, DISTRIBUTOR_DATE
         FROM DISTRIBUTOR
@@ -18,7 +20,9 @@ def get_records(farmer_id, processor_id, distributor_id, retailer_id, packager_i
     """, {'distributor_id': distributor_id})
     tmp = cursor.fetchone()
     if tmp is not None:
-        result.append(list(tmp)) 
+        tmp = list(tmp)
+        tmp.insert(0, 'distributor')
+        result.append(tmp) 
     cursor.execute("""
         SELECT PROCESSOR_ADDRESS, PROCESSOR_CONTRACT, PROCESSOR_DATE, PROCESSOR_METHOD
         FROM PROCESSOR
@@ -26,7 +30,9 @@ def get_records(farmer_id, processor_id, distributor_id, retailer_id, packager_i
     """, {'processor_id': processor_id})
     tmp = cursor.fetchone()
     if tmp is not None:
-        result.append(list(tmp))
+        tmp = list(tmp)
+        tmp.insert(0, 'processor')
+        result.append(tmp)
     cursor.execute("""
         SELECT RETAILER_ADDRESS, RETAILER_CONTACT, RECEIVED_DATE
         FROM RETAILER
@@ -34,7 +40,9 @@ def get_records(farmer_id, processor_id, distributor_id, retailer_id, packager_i
     """, {'retailer_id': retailer_id})
     tmp = cursor.fetchone()
     if tmp is not None:
-        result.append(list(tmp))
+        tmp = list(tmp)
+        tmp.insert(0, 'retailer')
+        result.append(tmp)
     cursor.execute("""
         SELECT PACKAGER_ADDRESS, PACKAGER_CONTACT, PACKAGE_DATE
         FROM PACKAGER
@@ -42,10 +50,12 @@ def get_records(farmer_id, processor_id, distributor_id, retailer_id, packager_i
     """, {'packager_id': packager_id})
     tmp = cursor.fetchone()
     if tmp is not None:
-        result.append(list(tmp))
+        tmp = list(tmp)
+        tmp.insert(0, 'packager')
+        result.append(tmp)
         
-    result.sort(key=lambda x: x[2])
+    result.sort(key=lambda x: x[3])
     for i in range(len(result)):
-        result[i][2] = result[i][2].strftime('%Y-%m-%d')
+        result[i][3] = result[i][3].strftime('%Y-%m-%d')
     
     return result
