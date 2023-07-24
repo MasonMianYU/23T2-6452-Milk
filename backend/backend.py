@@ -257,7 +257,7 @@ def addAdmin():
             # Add the target address as an admin in the contract
             # The contract function `addAdmin` expects one argument: target_address
             transaction_hash = contract.functions.addAdmin(target_address).transact({'from': user_address})
-            w3.eth.waitForTransactionReceipt(transaction_hash)
+            w3.eth.wait_for_transaction_receipt(transaction_hash)
 
             response = {
                 'is_success': True,
@@ -461,7 +461,7 @@ def addRecord():
             # Send the hash value to the blockchain
             # The contract function `addHash` expects two arguments: product_id and hash_value
             transaction_hash = contract.functions.addHash(batch_id, record_hash).transact({'from': user_address})
-            w3.eth.waitForTransactionReceipt(transaction_hash)
+            w3.eth.wait_for_transaction_receipt(transaction_hash)
     
             response = {
                 'message': 'Record added to the system successfully.',
