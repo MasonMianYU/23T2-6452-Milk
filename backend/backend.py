@@ -1,12 +1,27 @@
 from datetime import datetime
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from json import dumps
 import psycopg2
 from web3 import Web3, EthereumTesterProvider
 import cx_Oracle
 import helper
 
+def defaultHandler(err):
+    response = err.get_response()
+    print('response', err, err.get_response())
+    response.data = dumps({
+        "code": err.code,
+        "name": "System Error",
+        "message": err.get_description(),
+    })
+    response.content_type = 'application/json'
+    return response
+
 app = Flask(__name__)
+CORS(app)
+app.config['TRAP_HTTP_EXCEPTIONS'] = True
+app.register_error_handler(Exception, defaultHandler)
 provider_url = 'http://127.0.0.1:8545'
 w3 = Web3(Web3.HTTPProvider(provider_url))
 
@@ -19,7 +34,7 @@ dsn_tns = cx_Oracle.makedsn(db_host, '1521', "DATABASE")
 conn = cx_Oracle.connect(user=db_user, password="jinge1925", dsn=dsn_tns, encoding=encoding)
 
 
-contract_address = '0xecd79E6ACDc817dE0522a60972482eDf670AB7a6'
+contract_address = '0x64a3fF13c25B03b8436b29005670986BcfFfeB4E'
 contract_abi = [
 	{
 		"inputs": [],
