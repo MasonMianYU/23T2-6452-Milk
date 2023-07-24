@@ -368,7 +368,7 @@ def addRecord():
     # check whether the batch exist
     cursor = conn.cursor()
     check_batch_query = """
-        SELECT BATCH_INFO
+        SELECT * FROM BATCH_INFO
         WHERE BATCH_ID = :batch_id
         """
     cursor.execute(check_batch_query, {'batch_id': batch_id})
@@ -514,7 +514,7 @@ def query():
     # check whether the batch exist
     cursor = conn.cursor()
     check_batch_query = """
-        SELECT BATCH_INFO
+        SELECT * FROM BATCH_INFO
         WHERE BATCH_ID = :batch_id
         """
     cursor.execute(check_batch_query, {'batch_id': batch_id})
