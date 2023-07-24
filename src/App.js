@@ -1,25 +1,28 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { MemoryRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Login from './pages/Login';
+import Input from './pages/Input';
+import Info from './pages/info';
+import Product from './pages/Product';
+import Adduser from './pages/Adduser';
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Link to="/"></Link>
+      <Link to="/input"></Link>
+      <Link to="/info"></Link>
+      <Link to="/add"></Link>
+      <Link to="/product"></Link>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/input" element={<Input />} />
+        <Route path="/info" element={<Info />} />
+        <Route path="/add" element={<Adduser />} />
+        <Route path="/product" element={<Product />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
