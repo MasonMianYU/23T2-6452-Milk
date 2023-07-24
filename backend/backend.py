@@ -428,7 +428,7 @@ def addRecord():
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
             elif record_type == 'processor' and check_result[2] == None:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d') + (detail if detail is not None else "")
-                sql_insert_query = """INSERT INTO PROCESSOR(PROCESSOR_ADDRESS, PROCESSOR_CONTACT, PROCESSOR_DATE, PROCESSOR_METHOD) 
+                sql_insert_query = """INSERT INTO PROCESSOR(PROCESSOR_ADDRESS, PROCESSOR_CONTRACT, PROCESSOR_DATE, PROCESSOR_METHOD) 
                 VALUES (:actual_address, :contact, :current_date, :detail) RETURNING PROCESSOR_ID INTO :record_id"""
                 record_id = cursor.var(cx_Oracle.NUMBER)
                 cursor.execute(sql_insert_query, [actual_address, contact, current_date, detail, record_id])
