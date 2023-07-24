@@ -304,7 +304,6 @@ def createBatch():
             new_generated_batch_id = new_batch_id.getvalue()[0]
             cursor.close()
             conn.commit()
-            conn.close()
             
             response = {
                 'is_success': True,
@@ -445,7 +444,6 @@ def addRecord():
             
             cursor.close()
             conn.commit()
-            conn.close()
         except Exception as err:
             response = {
                 'is_success': False,
