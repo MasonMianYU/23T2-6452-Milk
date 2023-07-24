@@ -2,7 +2,6 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from json import dumps
-import psycopg2
 from web3 import Web3, EthereumTesterProvider
 import cx_Oracle
 import helper
