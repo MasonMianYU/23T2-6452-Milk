@@ -365,12 +365,29 @@ def addRecord():
     detail = (request.json['detail'] if request.json['detail'] != 'NONE' else None)
     record_data = ''
     is_admin = contract.functions.admins(user_address).call()
+    # check whether the batch exist
+    cursor = conn.cursor()
+    check_batch_query = """
+        SELECT BATCH_INFO
+        WHERE BATCH_ID = :batch_id
+        """
+    cursor.execute(check_batch_query, {'batch_id': batch_id})
+    check_result = cursor.fetchone()
+    cursor.close()
+    if check_result == None:
+        response = {
+            'is_success': False,
+            'message': 'The product batch do not exist'
+        }
+
+        return jsonify(response)
+    
     if is_admin:
         # Store the record data in the database
         try:
             cursor = conn.cursor()
             current_date = datetime.now().date()
-            if record_type == 'distributor':
+            if record_type == 'distributor' and check_result[3]:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d')
                 sql_insert_query = """INSERT INTO DISTRIBUTOR(DISTRIBUTOR_ADDRESS, DISTRIBUTOR_CONTACT, DISTRIBUTOR_DATE) 
                     VALUES (:actual_address, :contact, :current_date) RETURNING DISTRIBUTOR_ID INTO :record_id"""
@@ -383,7 +400,7 @@ def addRecord():
                     WHERE BATCH_ID = :batch_id
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
-            elif record_type == 'farmer':
+            elif record_type == 'farmer' and check_result[1]:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d') + (detail if detail is not None else "")
                 sql_insert_query = """INSERT INTO FARMER(FARMER_ADDRESS, FARMER_CONTACT, PRODUCING_DATE, COW_HEALTH_REORD) 
                 VALUES (:actual_address, :contact, :current_date, :detail) RETURNING FARMER_ID INTO :record_id"""
@@ -396,7 +413,7 @@ def addRecord():
                     WHERE BATCH_ID = :batch_id
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
-            elif record_type == 'packager':
+            elif record_type == 'packager' and check_result[5]:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d')
                 sql_insert_query = """INSERT INTO PACKAGER(PACKAGER_ADDRESS, PACKAGER_CONTACT, PACKAGE_DATE) 
                 VALUES (:actual_address, :contact, :current_date) RETURNING PACKAGER_ID INTO :record_id"""
@@ -409,7 +426,7 @@ def addRecord():
                     WHERE BATCH_ID = :batch_id
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
-            elif record_type == 'processor':
+            elif record_type == 'processor' and check_result[2]:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d') + (detail if detail is not None else "")
                 sql_insert_query = """INSERT INTO PROCESSOR(PROCESSOR_ADDRESS, PROCESSOR_CONTACT, PROCESSOR_DATE, PROCESSOR_METHOD) 
                 VALUES (:actual_address, :contact, :current_date, :detail) RETURNING PROCESSOR_ID INTO :record_id"""
@@ -422,7 +439,7 @@ def addRecord():
                     WHERE BATCH_ID = :batch_id
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
-            elif record_type == 'retaier':
+            elif record_type == 'retaier' and check_result[4]:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d')
                 sql_insert_query = """INSERT INTO RETAILER(RETAILER_ADDRESS, RETAILER_CONTACT, RECEIVED_DATE) 
                 VALUES (:actual_address, :contact, :current_date) RETURNING RETAILER_ID INTO :record_id"""
@@ -487,12 +504,28 @@ def addRecord():
 
 
 
-@app.route('/query', methods=['GET'])
+@app.route('/query', methods=['POST'])
 def query():
     # get records related to the product id
-    batch_id = request.args.get('batch_id')
+    batch_id = request.json['batch_id']
     
     chain_length = contract.functions.chainLength(int(batch_id)).call()
+    
+    # check whether the batch exist
+    cursor = conn.cursor()
+    check_batch_query = """
+        SELECT BATCH_INFO
+        WHERE BATCH_ID = :batch_id
+        """
+    cursor.execute(check_batch_query, {'batch_id': batch_id})
+    check_result = cursor.fetchone()
+    cursor.close()
+    if check_result == None:
+        response = {
+            'is_success': False,
+            'message': 'The product batch do not exist'
+        }
+        return jsonify(response)
 
     # Check if the product ID exists in the database
     if chain_length > 0:
