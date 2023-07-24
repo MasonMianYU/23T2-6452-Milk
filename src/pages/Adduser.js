@@ -9,7 +9,7 @@ const Adduser = () => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const onSearch = (value) => console.log(addr);
+  const onSearch = (value) => console.log(value);
   return (
     <Layout hasSider>
       <Sider
@@ -54,7 +54,7 @@ const Adduser = () => {
           >
             <Space direction="vertical">
                 <Search
-                placeholder="input user adress"
+                placeholder="input user ad6ress"
                 allowClear
                 enterButton="Add"
                 size="large"
