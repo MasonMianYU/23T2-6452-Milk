@@ -5,11 +5,23 @@ const { Header, Content, Footer, Sider } = Layout;
 
 const { Search } = Input;
 const If = () => {
-    const [addr, setAddr] = React.useState('');
+  const [addr, setAddr] = React.useState('');
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const onSearch = () => console.log(addr);
+  const jsonstring = JSON.stringify({
+    batch_id: addr,
+  });
+
+  const requestoption = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: jsonstring,
+  };
+
+  const onSearch = () => {
+    
+  };
   return (
     <Layout hasSider>
       <Sider

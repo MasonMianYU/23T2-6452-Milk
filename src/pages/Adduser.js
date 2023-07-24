@@ -9,7 +9,34 @@ const Adduser = () => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const onSearch = (value) => console.log(value);
+  const jsonstring = JSON.stringify({
+    user_address: addr,
+  });
+
+  const requestoption = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: jsonstring,
+  };
+
+  
+  const onSearch = () => {
+    // fetch('http://127.0.0.1:5000/addAdmin', requestoption)
+    // .then((r) => {
+    //   if (r.status === 200) {
+    //     r.json().then((data) => {
+    //       console.log(data);
+    //       alert('success');
+    //       navigate('/input');
+    //     });
+       
+    //   } else {
+    //     r.json().then((data) => {
+    //     alert(data['message']);  
+    //     });
+    //   }
+    // })
+  };
   return (
     <Layout hasSider>
       <Sider
