@@ -309,7 +309,7 @@ def createBatch():
             response = {
                 'is_success': True,
                 'batch_id': new_generated_batch_id,
-                'message': 'Failed to add record to the database.'
+                'message': 'created the batch successfully.'
             }
     
             return jsonify(response)
@@ -459,7 +459,7 @@ def addRecord():
         try:
             # Send the hash value to the blockchain
             # The contract function `addHash` expects two arguments: product_id and hash_value
-            transaction_hash = contract.functions.addHash(batch_id, record_hash).transact({'from': user_address})
+            transaction_hash = contract.functions.addHash(int(batch_id), record_hash).transact({'from': user_address})
             w3.eth.wait_for_transaction_receipt(transaction_hash)
     
             response = {
@@ -494,12 +494,12 @@ def query():
     # get records related to the product id
     batch_id = request.args.get('batch_id')
     
-    chain_length = contract.functions.chainLength(batch_id).call()
+    chain_length = contract.functions.chainLength(int(batch_id)).call()
 
     # Check if the product ID exists in the database
     if chain_length > 0:
         # Retrieve the stored hash values from the blockchain
-        stored_hashes = [contract.functions.hashes(batch_id, i).call() for i in range(chain_length)]
+        stored_hashes = [contract.functions.hashes(int(batch_id), i).call() for i in range(chain_length)]
         
         # get records from oracle database
         cursor = conn.cursor()
