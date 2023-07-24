@@ -345,12 +345,12 @@ def createBatch():
 def addRecord():
     # add record to database, and store hash value of the record to blockchain
     user_address = request.json['user_address']
-    batch_id = request.json['product_id']
+    batch_id = request.json['batch_id']
     record_type = request.json['type']
     actual_address = request.json['address']
     contact = request.json['contact']
-    detail = request.json['detail']
-    record_data = record_type + actual_address + contact + detail
+    detail = (request.json['detail'] if request.json['detail'] != 'NONE' else None)
+    record_data = ''
     is_admin = contract.functions.admins(user_address).call()
     if is_admin:
         # Store the record data in the database
@@ -358,6 +358,7 @@ def addRecord():
             cursor = conn.cursor()
             current_date = datetime.now().date()
             if record_type == 'distributor':
+                record_data = actual_address + contact + current_date.strftime('%Y-%m-%d')
                 sql_insert_query = """INSERT INTO DISTRIBUTOR(DISTRIBUTOR_ADDRESS, DISTRIBUTOR_CONTACT, DISTRIBUTOR_DATE) 
                     VALUES (:actual_address, :contact, :current_date) RETURNING DISTRIBUTOR_ID INTO :record_id"""
                 record_id = cursor.var(cx_Oracle.NUMBER)
@@ -370,6 +371,7 @@ def addRecord():
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
             elif record_type == 'farmer':
+                record_data = actual_address + contact + current_date.strftime('%Y-%m-%d') + (detail if detail is not None else "")
                 sql_insert_query = """INSERT INTO FARMER(FARMER_ADDRESS, FARMER_CONTACT, PRODUCING_DATE, COW_HEALTH_REORD) 
                 VALUES (:actual_address, :contact, :current_date, :detail) RETURNING FARMER_ID INTO :record_id"""
                 record_id = cursor.var(cx_Oracle.NUMBER)
@@ -382,6 +384,7 @@ def addRecord():
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
             elif record_type == 'packager':
+                record_data = actual_address + contact + current_date.strftime('%Y-%m-%d')
                 sql_insert_query = """INSERT INTO PACKAGER(PACKAGER_ADDRESS, PACKAGER_CONTACT, PACKAGE_DATE) 
                 VALUES (:actual_address, :contact, :current_date) RETURNING PACKAGER_ID INTO :record_id"""
                 record_id = cursor.var(cx_Oracle.NUMBER)
@@ -394,6 +397,7 @@ def addRecord():
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
             elif record_type == 'processor':
+                record_data = actual_address + contact + current_date.strftime('%Y-%m-%d') + (detail if detail is not None else "")
                 sql_insert_query = """INSERT INTO PROCESSOR(PROCESSOR_ADDRESS, PROCESSOR_CONTACT, PROCESSOR_DATE, PROCESSOR_METHOD) 
                 VALUES (:actual_address, :contact, :current_date, :detail) RETURNING PROCESSOR_ID INTO :record_id"""
                 record_id = cursor.var(cx_Oracle.NUMBER)
@@ -406,6 +410,7 @@ def addRecord():
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
             elif record_type == 'retaier':
+                record_data = actual_address + contact + current_date.strftime('%Y-%m-%d')
                 sql_insert_query = """INSERT INTO RETAILER(RETAILER_ADDRESS, RETAILER_CONTACT, RECEIVED_DATE) 
                 VALUES (:actual_address, :contact, :current_date) RETURNING RETAILER_ID INTO :record_id"""
                 record_id = cursor.var(cx_Oracle.NUMBER)
@@ -473,37 +478,62 @@ def addRecord():
 @app.route('/query', methods=['GET'])
 def query():
     # get records related to the product id
-    product_id = request.args.get('product_id')
+    batch_id = request.args.get('batch_id')
     
-    # record_data = database[product_id]
-    
-    chain_length = contract.functions.chainLength(product_id).call()
+    chain_length = contract.functions.chainLength(batch_id).call()
 
     # Check if the product ID exists in the database
     if chain_length > 0:
         # Retrieve the stored hash values from the blockchain
-        stored_hashes = [contract.functions.hashes(product_id, i).call() for i in range(chain_length)]
+        stored_hashes = [contract.functions.hashes(batch_id, i).call() for i in range(chain_length)]
         
         # get records from oracle database
-        
-        # Sort the records based on date (assuming date is a field in the record)
-        sorted_records = sorted(records, key=lambda x: x['date'])
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT *
+            FROM BATCH_INFO
+            LEFT JOIN DISTRIBUTOR ON BATCH_INFO.DISTRIBUTOR_ID = DISTRIBUTOR.DISTRIBUTOR_ID
+            LEFT JOIN FARMER ON BATCH_INFO.FARMER_ID = FARMER.FARMER_ID
+            LEFT JOIN PACKAGER ON BATCH_INFO.PACKAGER_ID = PACKAGER.PACKAGER_ID
+            LEFT JOIN PROCESSOR ON BATCH_INFO.PROCESSOR_ID = PROCESSOR.PROCESSOR_ID
+            LEFT JOIN RETAILER ON BATCH_INFO.RETAILER_ID = RETAILER.RETAILER_ID
+            WHERE BATCH_INFO.BATCH_ID = :batch_id
+        """, {'batch_id': batch_id})
+        result = cursor.fetchone()
+        farmer_id = result[1]
+        processor_id = result[2]
+        distributor_id = result[3]
+        retailer_id = result[4]
+        packager_id = result[5]
+        expire_date = result[6]
+        product_type = result[7]
+        records = helper.get_records(farmer_id, processor_id, distributor_id, retailer_id, packager_id, conn)
 
         # Check the hash values for each record
-        for i in len(sorted_records):
-            record_hash = Web3.keccak(text=sorted_records[i]).hex()
+        for i in range(len(records)):
+            text = ''.join(str(elem) for elem in result)
+            record_hash = Web3.keccak(text).hex()
 
-            if record_hash != stored_hashes:
+            if i < len(stored_hashes) and record_hash != stored_hashes[i]:
                 # The hash is verified on the blockchain
-                sorted_records[i]['verified'] = True
-                break
+                records[i].append(True)
             else:
                 # The hash does not match the stored hashes on the blockchain
-                sorted_records[i]['verified'] = False
-
-        return jsonify(sorted_records)
+                records[i].append(False)
+        
+        response = {
+            'is_success': True,
+            'records': records,
+            'expire_date': expire_date,
+            'product_type': product_type
+        }
+        return jsonify(response)
     else:
-        return f"No records hash related to the product_id stored on the blockchain."
+        response = {
+            'is_success': False,
+            'message': 'No records hash related to the product_id stored on the blockchain.'
+        }
+        return jsonify(response)
 
 if __name__ == '__main__':
     app.run()
