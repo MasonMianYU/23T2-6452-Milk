@@ -2,7 +2,6 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from json import dumps
-import psycopg2
 from web3 import Web3, EthereumTesterProvider
 import cx_Oracle
 import helper
@@ -34,7 +33,7 @@ dsn_tns = cx_Oracle.makedsn(db_host, '1521', "DATABASE")
 conn = cx_Oracle.connect(user=db_user, password="jinge1925", dsn=dsn_tns, encoding=encoding)
 
 
-contract_address = '0x64a3fF13c25B03b8436b29005670986BcfFfeB4E'
+contract_address = '0x24E0530beA4E2fd21A5ddd03C0aADb09149b3D28'
 contract_abi = [
 	{
 		"inputs": [],
