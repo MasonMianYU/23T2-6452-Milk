@@ -537,11 +537,6 @@ def query():
         cursor.execute("""
             SELECT *
             FROM BATCH_INFO
-            LEFT JOIN DISTRIBUTOR ON BATCH_INFO.DISTRIBUTOR_ID = DISTRIBUTOR.DISTRIBUTOR_ID
-            LEFT JOIN FARMER ON BATCH_INFO.FARMER_ID = FARMER.FARMER_ID
-            LEFT JOIN PACKAGER ON BATCH_INFO.PACKAGER_ID = PACKAGER.PACKAGER_ID
-            LEFT JOIN PROCESSOR ON BATCH_INFO.PROCESSOR_ID = PROCESSOR.PROCESSOR_ID
-            LEFT JOIN RETAILER ON BATCH_INFO.RETAILER_ID = RETAILER.RETAILER_ID
             WHERE BATCH_INFO.BATCH_ID = :batch_id
         """, {'batch_id': batch_id})
         result = cursor.fetchone()
@@ -556,8 +551,8 @@ def query():
 
         # Check the hash values for each record
         for i in range(len(records)):
-            text = ''.join(str(elem) for elem in result)
-            record_hash = Web3.keccak(text).hex()
+            text = ''.join(str(elem) for elem in records[i])
+            record_hash = Web3.keccak(text=text).hex()
 
             if i < len(stored_hashes) and record_hash != stored_hashes[i]:
                 # The hash is verified on the blockchain
