@@ -509,7 +509,7 @@ def query():
     # get records related to the product id
     batch_id = request.json['batch_id']
     
-    chain_length = contract.functions.chainLength(int(batch_id)).call()
+    chain_length = contract.functions.getChainLength(int(batch_id)).call()
     
     # check whether the batch exist
     cursor = conn.cursor()
@@ -530,7 +530,7 @@ def query():
     # Check if the product ID exists in the database
     if chain_length > 0:
         # Retrieve the stored hash values from the blockchain
-        stored_hashes = [contract.functions.hashes(int(batch_id), i).call() for i in range(chain_length)]
+        stored_hashes = [contract.functions.getHash(int(batch_id), i).call() for i in range(chain_length)]
         
         # get records from oracle database
         cursor = conn.cursor()
