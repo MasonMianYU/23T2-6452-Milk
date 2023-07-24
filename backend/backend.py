@@ -387,7 +387,7 @@ def addRecord():
         try:
             cursor = conn.cursor()
             current_date = datetime.now().date()
-            if record_type == 'distributor' and check_result[3]:
+            if record_type == 'distributor' and check_result[3] == None:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d')
                 sql_insert_query = """INSERT INTO DISTRIBUTOR(DISTRIBUTOR_ADDRESS, DISTRIBUTOR_CONTACT, DISTRIBUTOR_DATE) 
                     VALUES (:actual_address, :contact, :current_date) RETURNING DISTRIBUTOR_ID INTO :record_id"""
@@ -400,7 +400,7 @@ def addRecord():
                     WHERE BATCH_ID = :batch_id
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
-            elif record_type == 'farmer' and check_result[1]:
+            elif record_type == 'farmer' and check_result[1] == None:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d') + (detail if detail is not None else "")
                 sql_insert_query = """INSERT INTO FARMER(FARMER_ADDRESS, FARMER_CONTACT, PRODUCING_DATE, COW_HEALTH_REORD) 
                 VALUES (:actual_address, :contact, :current_date, :detail) RETURNING FARMER_ID INTO :record_id"""
@@ -413,7 +413,7 @@ def addRecord():
                     WHERE BATCH_ID = :batch_id
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
-            elif record_type == 'packager' and check_result[5]:
+            elif record_type == 'packager' and check_result[5] == None:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d')
                 sql_insert_query = """INSERT INTO PACKAGER(PACKAGER_ADDRESS, PACKAGER_CONTACT, PACKAGE_DATE) 
                 VALUES (:actual_address, :contact, :current_date) RETURNING PACKAGER_ID INTO :record_id"""
@@ -426,7 +426,7 @@ def addRecord():
                     WHERE BATCH_ID = :batch_id
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
-            elif record_type == 'processor' and check_result[2]:
+            elif record_type == 'processor' and check_result[2] == None:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d') + (detail if detail is not None else "")
                 sql_insert_query = """INSERT INTO PROCESSOR(PROCESSOR_ADDRESS, PROCESSOR_CONTACT, PROCESSOR_DATE, PROCESSOR_METHOD) 
                 VALUES (:actual_address, :contact, :current_date, :detail) RETURNING PROCESSOR_ID INTO :record_id"""
@@ -439,7 +439,7 @@ def addRecord():
                     WHERE BATCH_ID = :batch_id
                     """
                 cursor.execute(update_record_id_query, {'batch_id': batch_id, 'generated_record_id': generated_record_id})
-            elif record_type == 'retaier' and check_result[4]:
+            elif record_type == 'retaier' and check_result[4] == None:
                 record_data = actual_address + contact + current_date.strftime('%Y-%m-%d')
                 sql_insert_query = """INSERT INTO RETAILER(RETAILER_ADDRESS, RETAILER_CONTACT, RECEIVED_DATE) 
                 VALUES (:actual_address, :contact, :current_date) RETURNING RETAILER_ID INTO :record_id"""
